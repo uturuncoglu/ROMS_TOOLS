@@ -10,10 +10,11 @@ load "ROMS_func.ncl"
 ;***********************************************************
 begin
   ;--- parameters ---
-  ifile = "ocean_avg_sub.nc"
+  ifile = "ocean_avg.nc"
   ofile = "ocean_avg_zlev.nc"
-  vlist = (/ "temp"   , "salt"   , "u"       , "v",   \
-            "lon_rho", "lat_rho", "mask_rho", "ocean_time" /)
+  vlist = (/ "u"      , "v"         , \
+            "lon_rho" , "lat_rho"   , \
+            "mask_rho", "ocean_time" /)
   nvar = dimsizes(vlist)
   zlev = (/ 0, 2.5, 5.0, 10.0, 15.0 /)
   nlev = dimsizes(zlev)
@@ -66,22 +67,32 @@ begin
   do i = 0, nvar-1
     dimNames = getfilevardims(fin, vlist(i))
     dimSizes = getfilevardimsizes(fin, vlist(i))
-   
-    if (any(dimNames .eq. "eta_u") .or. any(dimNames .eq. "eta_v")) then
-      delete([/ dimNames, dimSizes /])
-      continue
-    end if 
 
     indx = ind(dimNames .eq. "s_rho")
     if (.not. ismissing(indx)) then
       dimNames(indx) = "lev"
-      dimSizes(indx) = nlev  
+      dimSizes(indx) = nlev
     end if
+    delete(indx)
+
+    indx = ind(dimNames .eq. "eta_u" .or. dimNames .eq. "eta_v")
+    if (.not. ismissing(indx)) then
+      dimNames(indx) = "eta_rho"
+      dimSizes(indx) = nlat 
+    end if
+    delete(indx)
+
+    indx = ind(dimNames .eq. "xi_u" .or. dimNames .eq. "xi_v")
+    if (.not. ismissing(indx)) then
+      dimNames(indx) = "xi_rho"
+      dimSizes(indx) = nlon 
+    end if
+    delete(indx)
 
     dimUnlim = new((/ dimsizes(dimNames) /), "logical")
     dimUnlim = where(dimNames .eq. "ocean_time", True, False)
     filedimdef(ncout, dimNames, dimSizes, dimUnlim)
-    delete([/ dimNames, dimSizes, indx, dimUnlim /])
+    delete([/ dimNames, dimSizes, dimUnlim /])
   end do
 
   ;--- define variables ---
