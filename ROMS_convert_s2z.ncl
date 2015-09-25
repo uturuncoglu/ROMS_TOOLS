@@ -12,11 +12,11 @@ begin
   ;--- parameters ---
   ifile = "ocean_avg.nc"
   ofile = "ocean_avg_zlev.nc"
-  vlist = (/ "u"      , "v"         , \
-            "lon_rho" , "lat_rho"   , \
-            "mask_rho", "ocean_time" /)
+  vlist = (/ "temp", "salt", "u", "v", \
+            "x_rho" , "y_rho"   , \
+            "ocean_time" /)
   nvar = dimsizes(vlist)
-  zlev = (/ 0, 2.5, 5.0, 10.0, 15.0 /)
+  zlev = (/ 0, 2.5, 5.0, 10.0, 15.0, 25.0, 50.0, 75.0, 100.0, 125.0, 150.0, 175.0 /)
   nlev = dimsizes(zlev)
 
   ;---------------------------------------------------------
@@ -41,15 +41,23 @@ begin
   h = fin->h
   hc = fin->hc
 
-  msk2d = fin->mask_rho
-  lat2d = fin->lat_rho
-  lon2d = fin->lon_rho   
+  if (isfilevar(fin, "mask_rho")) then
+    msk2d = fin->mask_rho
+  end if
+
+  if (fin->spherical .eq. 0) then
+    x2d = fin->x_rho
+    y2d = fin->y_rho
+  else
+    x2d = fin->lon_rho   
+    y2d = fin->lat_rho
+  end if
   time = fin->ocean_time
 
   ;--- get dimensions ---
-  dims = dimsizes(msk2d)
-  nlat = dims(0)
-  nlon = dims(1)    
+  dims = dimsizes(x2d)
+  ny = dims(0)
+  nx = dims(1)    
   km = dimsizes(s_rho)
   ntime = dimsizes(time)
 
@@ -64,6 +72,8 @@ begin
   setfileoption(ncout, "DefineMode", True)
 
   ;--- define dimensions ---
+  listdn = new((/ 1000 /), "string")
+
   do i = 0, nvar-1
     dimNames = getfilevardims(fin, vlist(i))
     dimSizes = getfilevardimsizes(fin, vlist(i))
@@ -78,14 +88,14 @@ begin
     indx = ind(dimNames .eq. "eta_u" .or. dimNames .eq. "eta_v")
     if (.not. ismissing(indx)) then
       dimNames(indx) = "eta_rho"
-      dimSizes(indx) = nlat 
+      dimSizes(indx) = ny 
     end if
     delete(indx)
 
     indx = ind(dimNames .eq. "xi_u" .or. dimNames .eq. "xi_v")
     if (.not. ismissing(indx)) then
       dimNames(indx) = "xi_rho"
-      dimSizes(indx) = nlon 
+      dimSizes(indx) = nx 
     end if
     delete(indx)
 
@@ -189,7 +199,7 @@ begin
   ; STEP 2: Perform interpolation from s layers to z levels
   ;---------------------------------------------------------
 
-  zr = new((/ km, nlat, nlon /), "double", 1.0d20)
+  zr = new((/ km, ny, nx /), "double", 1.0d20)
 
   do i = 0, ntime-1
     ;--- time measurement ---
@@ -225,28 +235,28 @@ begin
           flag = True
           if (vlist(j) .eq. "u") then
             flag = False
-            vars = ROMS_u2rho(fin->$vlist(j)$(i,:,:,:))
+            vars = (/ ROMS_u2rho(fin->$vlist(j)$(i,:,:,:)) /)
           end if
           if (vlist(j) .eq. "v") then
             flag = False
-            vars = ROMS_v2rho(fin->$vlist(j)$(i,:,:,:))
+            vars = (/ ROMS_v2rho(fin->$vlist(j)$(i,:,:,:)) /)
           end if
           if (flag) then
-            vars = fin->$vlist(j)$(i,:,:,:)
+            vars = (/ fin->$vlist(j)$(i,:,:,:) /)
           end if
         end if
         if (ndims .eq. 3) then 
           flag = True
           if (vlist(j) .eq. "u") then      
             flag = False
-            vars = ROMS_u2rho(fin->$vlist(j)$)
+            vars = (/ ROMS_u2rho(fin->$vlist(j)$) /)
           end if
           if (vlist(j) .eq. "v") then
             flag = False
-            vars = ROMS_v2rho(fin->$vlist(j)$)
+            vars = (/ ROMS_v2rho(fin->$vlist(j)$) /)
           end if
           if (flag) then
-            vars = fin->$vlist(j)$
+            vars = (/ fin->$vlist(j)$ /)
           end if
         end if
 

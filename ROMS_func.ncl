@@ -24,7 +24,11 @@ begin
     L = dims(3)
     Lp = L+1
     Lm = L-1
-    output = new((/ dims(0), dims(1), Mp, Lp /), typeof(input), input@_FillValue)
+    if (isatt(input, "_FillValue")) then
+      output = new((/ dims(0), dims(1), Mp, Lp /), typeof(input), input@_FillValue)
+    else
+      output = new((/ dims(0), dims(1), Mp, Lp /), typeof(input), 1.0e20)
+    end if
 
     output(:,:,:,1:L-1) = 0.5*(input(:,:,:,0:Lm-1)+input(:,:,:,1:L-1))
     output(:,:,:,0) = output(:,:,:,1)
@@ -36,7 +40,11 @@ begin
     L = dims(2)
     Lp = L+1
     Lm = L-1
-    output = new((/ dims(0), Mp, Lp /), typeof(input), input@_FillValue)
+    if (isatt(input, "_FillValue")) then
+      output = new((/ dims(0), Mp, Lp /), typeof(input), input@_FillValue)
+    else
+      output = new((/ dims(0), Mp, Lp /), typeof(input), 1.0e20)
+    end if
 
     output(:,:,1:L-1) = 0.5*(input(:,:,0:Lm-1)+input(:,:,1:L-1))
     output(:,:,0) = output(:,:,1)
@@ -48,7 +56,11 @@ begin
     L = dims(1)
     Lp = L+1
     Lm = L-1
-    output = new((/ Mp, Lp /), typeof(input), input@_FillValue)
+    if (isatt(input, "_FillValue")) then
+      output = new((/ Mp, Lp /), typeof(input), input@_FillValue)
+    else
+      output = new((/ Mp, Lp /), typeof(input), 1.0e20)
+    end if
 
     output(:,1:L-1) = 0.5*(input(:,0:Lm-1)+input(:,1:L-1))
     output(:,0) = output(:,1)
@@ -75,7 +87,11 @@ begin
     Mp = M+1
     Mm = M-1
     Lp = dims(3)
-    output = new((/ dims(0), dims(1), Mp, Lp /), typeof(input), input@_FillValue)
+    if (isatt(input, "_FillValue")) then
+      output = new((/ dims(0), dims(1), Mp, Lp /), typeof(input), input@_FillValue)
+    else
+      output = new((/ dims(0), dims(1), Mp, Lp /), typeof(input), 1.0e20)
+    end if
 
     output(:,:,1:M-1,:) = 0.5*(input(:,:,0:Mm-1,:)+input(:,:,1:M-1,:))
     output(:,:,0,:) = output(:,:,1,:)
@@ -87,7 +103,11 @@ begin
     Mp = M+1
     Mm = M-1
     Lp = dims(2)
-    output = new((/ dims(0), Mp, Lp /), typeof(input), input@_FillValue)
+    if (isatt(input, "_FillValue")) then
+      output = new((/ dims(0), Mp, Lp /), typeof(input), input@_FillValue)
+    else
+      output = new((/ dims(0), Mp, Lp /), typeof(input), 1.0e20)
+    end if
 
     output(:,1:M-1,:) = 0.5*(input(:,0:Mm-1,:)+input(:,1:M-1,:))
     output(:,0,:) = output(:,1,:)
@@ -99,7 +119,11 @@ begin
     Mp = M+1
     Mm = M-1
     Lp = dims(1)
-    output = new((/ Mp, Lp /), typeof(input), input@_FillValue)
+    if (isatt(input, "_FillValue")) then
+      output = new((/ Mp, Lp /), typeof(input), input@_FillValue)
+    else
+      output = new((/ Mp, Lp /), typeof(input), 1.0e20)
+    end if
 
     output(1:M-1,:) = 0.5*(input(0:Mm-1,:)+input(1:M-1,:))
     output(0,:) = output(1,:)
